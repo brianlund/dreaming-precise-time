@@ -3,9 +3,6 @@
   "name": "Dreaming Precise Time",
   "version": "1.0.0",
   "description": "Shows precise time (hours and minutes) on Dreaming French/Spanish progress pages",
-  "permissions": [
-    "storage"
-  ],
   "host_permissions": [
     "https://app.dreaming.com/*"
   ],
