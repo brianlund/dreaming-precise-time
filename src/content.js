@@ -58,6 +58,19 @@ async function updatePreciseTime() {
     }
 }
 
+// Keep track of last update to avoid excessive calls
+let lastUpdateTime = 0;
+let cachedTimeText = '';
+
+function debouncedUpdate() {
+    const now = Date.now();
+    // Only update if 5 seconds have passed since last update
+    if (now - lastUpdateTime > 5000) {
+        lastUpdateTime = now;
+        updatePreciseTime();
+    }
+}
+
 // Wait for page to load, then update
 if (window.chrome) {
     window.addEventListener("load", () => setTimeout(updatePreciseTime, 750));
@@ -65,7 +78,22 @@ if (window.chrome) {
     setTimeout(updatePreciseTime, 750);
 }
 
-observer.observe(document.body, {
+// Create observer to watch for specific element changes only
+const observer = new MutationObserver((mutations) => {
+    // Only react if the time display element itself changed
+    for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+            if (node.nodeType === 1 && (node.classList?.contains('ds-overall-progression-card__info-label--bold') || node.querySelector?.('.ds-overall-progression-card__info-label--bold'))) {
+                debouncedUpdate();
+                return;
+            }
+        }
+    }
+});
+
+// Only observe the specific container, not entire body
+const container = document.querySelector('.ds-overall-progression-card') || document.body;
+observer.observe(container, {
     childList: true,
     subtree: true
 });
