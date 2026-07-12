@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Dreaming Precise Time",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Shows precise time (hours and minutes) on Dreaming French/Spanish progress pages",
   "host_permissions": [
     "https://app.dreaming.com/*"

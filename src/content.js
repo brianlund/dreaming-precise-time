@@ -31,6 +31,13 @@ async function updatePreciseTime() {
             method: 'GET'
         });
 
+        if (!response.ok) {
+            console.error('Dreaming Precise Time: API returned error', response.status, response.statusText);
+            const errorText = await response.text();
+            console.error('Dreaming Precise Time: Error details:', errorText);
+            return;
+        }
+
         const data = await response.json();
 
         // Get language-specific data
@@ -45,7 +52,7 @@ async function updatePreciseTime() {
         const minutes = Math.floor(totalSeconds / 60) % 60;
 
         // Find and update the time display element
-        const snippet = document.getElementsByClassName('ds-overall-progression-card__info-label--bold')[1];
+        const snippet = document.querySelector('[data-testid="total-input-time"]');
 
         if (snippet) {
             snippet.textContent = `${hours} hrs ${minutes} mins`;
@@ -78,16 +85,21 @@ if (window.chrome) {
     setTimeout(updatePreciseTime, 750);
 }
 
+const TIME_DISPLAY_SELECTOR = '[data-testid="total-input-time"]';
+
+function containsTimeDisplay(node) {
+    return node.nodeType === Node.ELEMENT_NODE &&
+        (node.matches(TIME_DISPLAY_SELECTOR) || node.querySelector(TIME_DISPLAY_SELECTOR));
+}
+
 // Create observer to watch for specific element changes only
 const observer = new MutationObserver((mutations) => {
-    // Only react if the time display element itself changed
-    for (const mutation of mutations) {
-        for (const node of mutation.addedNodes) {
-            if (node.nodeType === 1 && (node.classList?.contains('ds-overall-progression-card__info-label--bold') || node.querySelector?.('.ds-overall-progression-card__info-label--bold'))) {
-                debouncedUpdate();
-                return;
-            }
-        }
+    const timeDisplayAdded = mutations.some(({ addedNodes }) =>
+        Array.from(addedNodes).some(containsTimeDisplay)
+    );
+
+    if (timeDisplayAdded) {
+        debouncedUpdate();
     }
 });
 
